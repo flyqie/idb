@@ -959,7 +959,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd ${BUILD_DIR}\npwd\ncd ${BUILD_DIR%Build/*}SourcePackages/checkouts/grpc-swift\nmake plugins\npwd\n";
+			shellScript = "cd ${BUILD_DIR}\npwd\ncd ${BUILD_DIR%Build/*}SourcePackages/checkouts/grpc-swift\nswift build -c release --product protoc-gen-swift\nswift build -c release --product protoc-gen-grpc-swift\npwd\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
