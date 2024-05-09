@@ -12,11 +12,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      # https://stackoverflow.com/a/64195658
-      - name: Add GITHUB_SHORT_SHA env property with commit short sha
-        run: |
-          echo "GITHUB_SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_ENV
       
       - name: Build idb_companion
         run: |
@@ -26,22 +21,22 @@ jobs:
 
       - name: Compress idb_companion
         run: |
-          tar -cjf idb-companion.universal.${GITHUB_SHORT_SHA}.tar.gz -C build_output .
+          tar -cjf idb-companion.universal.${{ github.sha }}.tar.gz -C build_output .
 
       - name: Build idb wheel package
         run: |
           pip3 install --break-system-packages grpclib==0.4.1 wheel setuptools pyre-extensions protobuf
           FB_IDB_VERSION=0.2.3 python3 setup.py sdist bdist_wheel
-          mv ./dist/*.whl idb.${GITHUB_SHORT_SHA}.whl
+          mv ./dist/*.whl idb.${{ github.sha }}.whl
 
       - name: Upload idb_companion Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: idb_companion-${GITHUB_SHORT_SHA}
-          path: ./idb-companion.universal.${GITHUB_SHORT_SHA}.tar.gz
+          name: idb_companion-${{ github.sha }}
+          path: ./idb-companion.universal.${{ github.sha }}.tar.gz
 
       - name: Upload idb wheel package Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: idb_whl-${GITHUB_SHORT_SHA}
-          path: ./idb.${GITHUB_SHORT_SHA}.whl
+          name: idb_whl-${{ github.sha }}
+          path: ./idb.${{ github.sha }}.whl
