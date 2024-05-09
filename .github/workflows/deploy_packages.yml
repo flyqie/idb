@@ -1,0 +1,47 @@
+name: Deploy Packages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # https://stackoverflow.com/a/64195658
+      - name: Add GITHUB_SHORT_SHA env property with commit short sha
+        run: |
+          echo "GITHUB_SHORT_SHA=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_ENV
+      
+      - name: Build idb_companion
+        run: |
+          cd $GITHUB_WORKSPACE
+          brew install protobuf
+          ./idb_build.sh idb_companion build build_output
+
+      - name: Compress idb_companion
+        run: |
+          tar -cjf idb-companion.universal.${GITHUB_SHORT_SHA}.tar.gz -C build_output .
+
+      - name: Build idb wheel package
+        run: |
+          pip3 install --break-system-packages grpclib==0.4.1 wheel setuptools pyre-extensions protobuf
+          FB_IDB_VERSION=0.2.3 python3 setup.py sdist bdist_wheel
+          mv ./dist/*.whl idb.${GITHUB_SHORT_SHA}.whl
+
+      - name: Upload idb_companion Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: idb_companion-${GITHUB_SHORT_SHA}
+          path: ./idb-companion.universal.${GITHUB_SHORT_SHA}.tar.gz
+
+      - name: Upload idb wheel package Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: idb_whl-${GITHUB_SHORT_SHA}
+          path: ./idb.${GITHUB_SHORT_SHA}.whl
