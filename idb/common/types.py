@@ -18,8 +18,6 @@ from enum import Enum
 from io import StringIO
 from typing import Dict, IO, List, Optional, Set, Tuple, Union
 
-from python.migrations.py310 import StrEnum310
-
 
 LoggingMetadata = dict[str, Optional[Union[str, list[str], int, float]]]
 
@@ -42,7 +40,7 @@ class Permission(Enum):
     MICROPHONE = 6
 
 
-class TargetType(StrEnum310):
+class TargetType(str, Enum):
     DEVICE = "device"
     SIMULATOR = "simulator"
     MAC = "mac"
