@@ -180,7 +180,7 @@ extern FBFileContainerKind const FBFileContainerKindWallpaper;
  @param error an error out if the path is invalid.
  @return the new contained file.
  */
-- (id<FBContainedFile>)fileByAppendingPathComponent:(NSString *)component error:(NSError **)error;
+- (nullable id<FBContainedFile>)fileByAppendingPathComponent:(NSString *)component error:(NSError **)error;
 
 /**
  The host path corresponding to this file, if any.
@@ -205,6 +205,14 @@ extern FBFileContainerKind const FBFileContainerKindWallpaper;
 + (id<FBFileContainer>)fileContainerForProvisioningProfileCommands:(id<FBProvisioningProfileCommands>)commands queue:(dispatch_queue_t)queue;
 
 /**
+ A contained file relative to the path on the host.
+ 
+ @param basePath the base path to use.
+ @return a Contained File implementation
+ */
++ (id<FBContainedFile>)containedFileForBasePath:(NSString *)basePath;
+
+/**
  A file container that relative to a path on the host.
  
  @param basePath the base path to use.
@@ -219,6 +227,14 @@ extern FBFileContainerKind const FBFileContainerKindWallpaper;
  @return a File Container implementation
  */
 + (id<FBFileContainer>)fileContainerForPathMapping:(NSDictionary<NSString *, NSString *> *)pathMapping;
+
+/**
+ Returns an FBFileContainer wrapper around a FBContainedFile
+ 
+ @param containedFile the contained file to wrap.
+ @return a File Container implementation.
+ */
++ (id<FBFileContainer>)fileContainerForContainedFile:(id<FBContainedFile>)containedFile;
 
 @end
 
