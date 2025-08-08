@@ -41,7 +41,7 @@ struct FramebufferStreamMethodHandler {
     }
 
     @Atomic var finished = false
-    @Atomic var copyFramebufferRequestQueue: [CopyFramebufferRequest] = []
+    var copyFramebufferRequestQueue: [CopyFramebufferRequest] = []
 
     let config = FBVideoStreamConfiguration(
       encoding: .BGRA,
@@ -56,13 +56,8 @@ struct FramebufferStreamMethodHandler {
     let streamWriter = FIFOStreamWriter(stream: responseStream)
     let consumer = FBBlockDataConsumer.synchronousDataConsumer { data in
       guard !_finished.wrappedValue else { return }
-      guard let copyFramebufferRequest: CopyFramebufferRequest  = _copyFramebufferRequestQueue.sync(execute: { queue in
-        guard !queue.isEmpty else { return nil }
-        return queue.removeFirst()
-      }) else {
-        return
-      }
-
+      guard copyFramebufferRequestQueue.count != 0 else { return }
+      let copyFramebufferRequest = copyFramebufferRequestQueue.removeFirst()
       var response = Idb_FramebufferStreamResponse.with {
         $0.sharedMemoryName = copyFramebufferRequest.sharedMemoryName
       }
@@ -113,13 +108,13 @@ struct FramebufferStreamMethodHandler {
         case .stop:
           return
         case .copyFramebuffer(let copyFramebufferRequest):
-          _copyFramebufferRequestQueue.sync { queue in
-            queue.append(CopyFramebufferRequest(
-              sharedMemoryName: copyFramebufferRequest.sharedMemoryName,
-              sharedMemoryLength: copyFramebufferRequest.sharedMemoryLength
-            ))
+          simulatorVideoStream.writeQueue.async {
+              copyFramebufferRequestQueue.append(CopyFramebufferRequest(
+                sharedMemoryName: copyFramebufferRequest.sharedMemoryName,
+                sharedMemoryLength: copyFramebufferRequest.sharedMemoryLength
+              ))
+              simulatorVideoStream.pushFrame()
           }
-          simulatorVideoStream.pushFrame()
           break
         case .none:
           throw GRPCStatus(code: .invalidArgument, message: "Client should not close request stream explicitly, send `stop` frame first")
@@ -127,7 +122,7 @@ struct FramebufferStreamMethodHandler {
       }
     }
 
-    let observeFramebufferStreamStop = Task<Void, Error> { 
+    let observeFramebufferStreamStop = Task<Void, Error> {
       try await BridgeFuture.await(simulatorVideoStream.completed)
     }
 
