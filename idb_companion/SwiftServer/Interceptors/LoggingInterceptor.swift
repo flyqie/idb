@@ -16,10 +16,12 @@ private enum MethodStartKey: UserInfo.Key {
 final class LoggingInterceptor<Request, Response>: ServerInterceptor<Request, Response> {
 
   private let logger: FBIDBLogger
+  private let debugLogger: (any FBControlCoreLogger)?
   private let reporter: FBEventReporter
 
   init(logger: FBIDBLogger, reporter: FBEventReporter) {
     self.logger = logger
+    self.debugLogger = UserDefaults.standard.string(forKey: "-log-level") == "info" ? nil : logger.debug()
     self.reporter = reporter
   }
 
@@ -38,10 +40,10 @@ final class LoggingInterceptor<Request, Response>: ServerInterceptor<Request, Re
       reportMethodStart(methodName: methodInfo.name, in: context)
 
     case .message where methodInfo.callType == .clientStreaming || methodInfo.callType == .bidirectionalStreaming:
-      logger.debug().log("Receive frame of \(methodInfo.name)")
+      debugLogger?.log("Receive frame of \(methodInfo.name)")
 
     case .end where methodInfo.callType == .clientStreaming || methodInfo.callType == .bidirectionalStreaming:
-      logger.debug().log("Close client stream of \(methodInfo.name)")
+      debugLogger?.log("Close client stream of \(methodInfo.name)")
 
     default:
       break
@@ -85,7 +87,7 @@ final class LoggingInterceptor<Request, Response>: ServerInterceptor<Request, Re
 
     let subject: FBEventReporterSubject
     if status.isOk {
-      logger.debug().log("Success of \(methodName)")
+      debugLogger?.log("Success of \(methodName)")
       subject = FBEventReporterSubject(forSuccessfulCall: methodName, duration: duration, size: nil, arguments: [], reportNativeSwiftMethodCall: true)
     } else {
       logger.info().log("Failure of \(methodName), \(status)")
