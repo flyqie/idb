@@ -57,10 +57,10 @@ struct FramebufferStreamMethodHandler {
     )
     guard let simulatorVideoStream = try await BridgeFuture.value(target.createStream(with: config)) as? FBSimulatorVideoStream else { throw GRPCStatus(code: .internalError, message: "Framebuffer stream can only be used with a simulator device") };
 
-    let targetLogger = self.targetLogger
+    let debugLogger =  UserDefaults.standard.string(forKey: "-log-level") == "info" ? nil : self.targetLogger.debug()
     let streamWriter = FIFOStreamWriter(stream: responseStream)
     let consumer = FBBlockDataConsumer.synchronousDataConsumer { data in
-      targetLogger.debug().log("Received frame data, queue size: \(copyFramebufferRequestQueue.count)")
+      debugLogger?.log("Received frame data, queue size: \(copyFramebufferRequestQueue.count)")
       guard !_finished.wrappedValue else { return }
       guard copyFramebufferRequestQueue.count != 0 else { return }
       let copyFramebufferRequest = copyFramebufferRequestQueue.removeFirst()
@@ -99,10 +99,10 @@ struct FramebufferStreamMethodHandler {
         response.error = error.localizedDescription
       }
       do {
-          targetLogger.debug().log("Sending response to copy frame request: \(serialize(response:response))")
+        debugLogger?.log("Sending response to copy frame request: \(serialize(response:response))")
         try streamWriter.send(response)
       } catch {
-        targetLogger.debug().log("Error sending response to copy frame request: \(error)")
+        debugLogger?.log("Error sending response to copy frame request: \(error)")
         targetLogger.error().log(error.localizedDescription)
         _finished.set(true)
       }
@@ -116,9 +116,9 @@ struct FramebufferStreamMethodHandler {
         case .stop:
           return
         case .copyFramebuffer(let copyFramebufferRequest):
-          targetLogger.debug().log("Received copy frame request, shared memory name: \(copyFramebufferRequest.sharedMemoryName)")
+          debugLogger?.log("Received copy frame request, shared memory name: \(copyFramebufferRequest.sharedMemoryName)")
           simulatorVideoStream.writeQueue.async {
-            targetLogger.debug().log("Executing copy frame frequest, shared memory name: \(copyFramebufferRequest.sharedMemoryName), queue size: \(copyFramebufferRequestQueue.count)")
+            debugLogger?.log("Executing copy frame frequest, shared memory name: \(copyFramebufferRequest.sharedMemoryName), queue size: \(copyFramebufferRequestQueue.count)")
             copyFramebufferRequestQueue.append(CopyFramebufferRequest(
               sharedMemoryName: copyFramebufferRequest.sharedMemoryName,
               sharedMemoryLength: copyFramebufferRequest.sharedMemoryLength
