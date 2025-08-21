@@ -46,12 +46,15 @@ struct FramebufferStreamMethodHandler {
 
     @Atomic var finished = false
     var copyFramebufferRequestQueue: [CopyFramebufferRequest] = []
-
+    var scaleFactor: Float? = nil
+    if let scaleFactorHeader = context.request.headers.first(name: "scale-factor") {
+        scaleFactor = Float(scaleFactorHeader)
+    }
     let config = FBVideoStreamConfiguration(
       encoding: .BGRA,
       framesPerSecond: nil,
       compressionQuality: nil,
-      scaleFactor: nil,
+      scaleFactor: scaleFactor.map{NSNumber(value: $0) },
       avgBitrate: nil,
       keyFrameRate: nil
     )
@@ -68,7 +71,7 @@ struct FramebufferStreamMethodHandler {
         $0.sharedMemoryName = copyFramebufferRequest.sharedMemoryName
       }
       do {
-        guard let pixelBufferAttributes = simulatorVideoStream.pixelBufferAttributes else {
+        guard let pixelBufferAttributes = simulatorVideoStream.scaledPixelBufferAttributes ?? simulatorVideoStream.pixelBufferAttributes else {
           throw FramebufferCopyError.missingPixelBufferAttributes
         }
         guard let width = (pixelBufferAttributes["width"] as? NSNumber)?.uint32Value else {
