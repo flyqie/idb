@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) dispatch_queue_t writeQueue;
 @property (nonatomic, copy, nullable, readwrite) NSDictionary<NSString *, id> *pixelBufferAttributes;
+@property (nonatomic, copy, nullable, readwrite) NSDictionary<NSString *, id> *scaledPixelBufferAttributes;
 
 @end
 

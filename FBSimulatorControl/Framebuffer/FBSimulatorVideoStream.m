@@ -32,6 +32,7 @@
 - (BOOL)setupWithPixelBuffer:(CVPixelBufferRef)pixelBuffer error:(NSError **)error;
 - (BOOL)tearDown:(NSError **)error;
 - (BOOL)writeEncodedFrame:(CVPixelBufferRef)pixelBuffer frameNumber:(NSUInteger)frameNumber timeAtFirstFrame:(CFTimeInterval)timeAtFirstFrame error:(NSError **)error;
+- (NSDictionary<NSString *, id> *)scaledPixelBufferAttributes;
 
 @end
 
@@ -114,6 +115,20 @@ static NSDictionary<NSString *, id> *FBBitmapStreamPixelBufferAttributesFromPixe
     @"padding_row_bottom" : @(rowsBottom),
     @"format" : pixelFormatString,
   };
+}
+
+static NSDictionary<NSString *, id> *FBBitmapStreamPixelBufferAttribtuesFromPixelBufferPool(CVPixelBufferPoolRef pixelBufferPool)
+{
+  if (pixelBufferPool == NULL) {
+    return nil;
+  }
+  CVPixelBufferRef pixelBuffer;
+  if (kCVReturnSuccess != CVPixelBufferPoolCreatePixelBuffer(nil, pixelBufferPool, &pixelBuffer)) {
+      return nil;
+  }
+  NSDictionary<NSString *, id> *result = FBBitmapStreamPixelBufferAttributesFromPixelBuffer(pixelBuffer);
+  CVPixelBufferRelease(pixelBuffer);
+  return result;
 }
 
 static void scaleFromSourceToDestinationBuffer(CVPixelBufferRef sourceBuffer, CVPixelBufferRef destinationBuffer) {
@@ -250,6 +265,10 @@ static void MinicapCompressorCallback(void *outputCallbackRefCon, void *sourceFr
   CVPixelBufferRelease(toFree);
 
   return YES;
+}
+
+- (NSDictionary<NSString *, id> *)scaledPixelBufferAttributes {
+    return FBBitmapStreamPixelBufferAttribtuesFromPixelBufferPool(self.scaledPixelBufferPoolRef);
 }
 
 @end
@@ -394,6 +413,9 @@ static void MinicapCompressorCallback(void *outputCallbackRefCon, void *sourceFr
   return YES;
 }
 
+- (NSDictionary<NSString *, id> *)scaledPixelBufferAttributes {
+    return FBBitmapStreamPixelBufferAttribtuesFromPixelBufferPool(self.scaledPixelBufferPoolRef);
+}
 @end
 
 @interface FBSimulatorVideoStream_Lazy : FBSimulatorVideoStream
@@ -595,7 +617,8 @@ static void MinicapCompressorCallback(void *outputCallbackRefCon, void *sourceFr
     return NO;
   }
   self.framePusher = framePusher;
-
+  self.scaledPixelBufferAttributes = self.framePusher.scaledPixelBufferAttributes;
+    
   // Signal that we've started
   [self.startedFuture resolveWithResult:NSNull.null];
 
