@@ -217,7 +217,14 @@ static FBFuture<FBFuture<NSNull *> *> *BootFuture(NSString *udid, NSUserDefaults
         [logger logFormat:@"Booting %@ without verification", udid];
         options = options & ~FBSimulatorBootOptionsVerifyUsable;
       }
-      FBSimulatorBootConfiguration *config = [[FBSimulatorBootConfiguration alloc] initWithOptions:options environment:@{}];
+      NSMutableDictionary *bootEnvironment = [NSMutableDictionary new];
+      NSDictionary *environment = NSProcessInfo.processInfo.environment;
+      for (NSString *key in environment) {
+        if ([key hasPrefix:@"SIMCTL_CHILD_"]) {
+            bootEnvironment[key] = environment[key];
+        }
+      }
+      FBSimulatorBootConfiguration *config = [[FBSimulatorBootConfiguration alloc] initWithOptions:options environment:bootEnvironment];
       return [[simulator boot:config] mapReplace:simulator];
     }]
     onQueue:dispatch_get_main_queue() map:^ FBFuture<NSNull *> * (FBSimulator *simulator) {
