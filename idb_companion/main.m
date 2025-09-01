@@ -219,9 +219,10 @@ static FBFuture<FBFuture<NSNull *> *> *BootFuture(NSString *udid, NSUserDefaults
       }
       NSMutableDictionary *bootEnvironment = [NSMutableDictionary new];
       NSDictionary *environment = NSProcessInfo.processInfo.environment;
+      NSString *simctlChildPrefix = @"SIMCTL_CHILD_";
       for (NSString *key in environment) {
-        if ([key hasPrefix:@"SIMCTL_CHILD_"]) {
-            bootEnvironment[key] = environment[key];
+        if ([key hasPrefix:simctlChildPrefix]) {
+            bootEnvironment[[key substringFromIndex:simctlChildPrefix.length]] = environment[key];
         }
       }
       FBSimulatorBootConfiguration *config = [[FBSimulatorBootConfiguration alloc] initWithOptions:options environment:bootEnvironment];
