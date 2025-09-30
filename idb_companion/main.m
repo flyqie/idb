@@ -628,6 +628,35 @@ static void logStartupInfo(FBIDBLogger *logger)
     [logger.info logFormat:@"Invoked with args=%@ env=%@", [FBCollectionInformation oneLineDescriptionFromArray:NSProcessInfo.processInfo.arguments], EnvDescription()];
 }
 
+static id waitForFutureAndHandleSignals(FBFuture *future, NSArray<FBFuture<NSNumber*>*> *signalFutures, FBIDBLogger *logger)
+{
+    FBFuture<NSNull *> *completed = [FBFuture race:@[
+      future,
+      [FBFuture race:signalFutures],
+    ]];
+    NSError *error = nil;
+    id result = [completed await:&error];
+    if (future.state == FBFutureStateCancelled) {
+      [logger logFormat:@"Responding to termination of idb with signo %@", result];
+      FBFuture<NSNull *> *cancellation = [future cancel];
+      id cancellationResult = [cancellation await:&error];
+      if (!cancellationResult) {
+        [logger.error log:error.localizedDescription];
+        return nil;
+      }
+      return result;
+    }
+    if (completed.error) {
+      [logger.error log:completed.error.localizedDescription];
+      return nil;
+    }
+    if (!result) {
+      [logger.error log:error.localizedDescription];
+      return nil;
+    }
+    return result;
+}
+
 int main(int argc, const char *argv[]) {
   @autoreleasepool
   {
@@ -655,37 +684,18 @@ int main(int argc, const char *argv[]) {
       error = nil;
     }
 
-    FBFuture<NSNumber *> *signalled = [FBFuture race:@[
-      signalHandlerFuture(SIGINT, @"Signalled: SIGINT", logger),
-      signalHandlerFuture(SIGTERM, @"Signalled: SIGTERM", logger),
-    ]];
-    FBFuture<NSNull *> *companionCompleted = [GetCompanionCompletedFuture(userDefaults, xcodeAvailable, logger) await:&error];
-    if (!companionCompleted) {
-      [logger.error log:error.localizedDescription];
-      return 1;
-    }
-
-    FBFuture<NSNull *> *completed = [FBFuture race:@[
-      companionCompleted,
-      signalled,
-    ]];
-    if (completed.error) {
-      [logger.error log:completed.error.localizedDescription];
-      return 1;
-    }
-    id result = [completed await:&error];
+    FBFuture<NSNumber *> *sigintFuture = signalHandlerFuture(SIGINT, @"Signalled: SIGINT", logger),
+      *sigtermFuture = signalHandlerFuture(SIGTERM, @"Signalled: SIGTERM", logger);
+    id result = waitForFutureAndHandleSignals(GetCompanionCompletedFuture(userDefaults, xcodeAvailable, logger), @[sigintFuture, sigtermFuture], logger);
     if (!result) {
-      [logger.error log:error.localizedDescription];
       return 1;
     }
-    if (companionCompleted.state == FBFutureStateCancelled) {
-      [logger logFormat:@"Responding to termination of idb with signo %@", result];
-      FBFuture<NSNull *> *cancellation = [companionCompleted cancel];
-      result = [cancellation await:&error];
-      if (!result) {
-        [logger.error log:error.localizedDescription];
-        return 1;
-      }
+    if ([result isKindOfClass:NSNumber.class]) {
+      return 0;
+    }
+    result = waitForFutureAndHandleSignals(result, @[sigintFuture, sigtermFuture], logger);
+    if (!result) {
+      return 1;
     }
   }
   return 0;
