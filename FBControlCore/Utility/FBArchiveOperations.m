@@ -16,11 +16,17 @@ NSString *const BSDTarPath = @"/usr/bin/bsdtar";
 
 @implementation FBArchiveOperations
 
++ (NSArray<NSString *> *)commandToExtractArchiveAtPath:(NSString *)path toPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime debugLogging:(BOOL)debugLogging
+{
+  NSString *flagString = [self flagStringForExtractionWithOverrideModificationTime:overrideMTime debugLogging:debugLogging];
+  return @[flagString, @"-C", extractPath, @"-f", path];
+}
+
 + (FBFuture<NSString *> *)extractArchiveAtPath:(NSString *)path toPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime logger:(id<FBControlCoreLogger>)logger
 {
   return [[[[[[[FBProcessBuilder
     withLaunchPath:BSDTarPath]
-    withArguments:@[overrideMTime ? @"-zxpm" : @"-zxp", @"-C", extractPath, @"-f", path]]
+    withArguments:[self commandToExtractArchiveAtPath:path toPath:extractPath overrideModificationTime:overrideMTime debugLogging:NO]]
     withStdErrToLoggerAndErrorMessage:logger.debug]
     withStdOutToLogger:logger.debug]
     withTaskLifecycleLoggingTo:logger]
@@ -28,9 +34,10 @@ NSString *const BSDTarPath = @"/usr/bin/bsdtar";
     mapReplace:extractPath];
 }
 
-+ (NSArray<NSString *> *)commandToExtractFromStdInWithExtractPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime compression:(FBCompressionFormat)compression
++ (NSArray<NSString *> *)commandToExtractFromStdInWithExtractPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime compression:(FBCompressionFormat)compression debugLogging:(BOOL)debugLogging
 {
-  NSArray<NSString *> *extractCommand = @[overrideMTime ? @"-zxpm" : @"-zxp", @"-C", extractPath, @"-f", @"-"];
+  NSString *flagString = [self flagStringForExtractionWithOverrideModificationTime:overrideMTime debugLogging:debugLogging];
+  NSArray<NSString *> *extractCommand = @[flagString, @"-C", extractPath, @"-f", @"-"];
   if (compression == FBCompressionFormatZSTD) {
     extractCommand = @[@"--use-compress-program", @"pzstd -d", overrideMTime ? @"-xpm" : @"-xp", @"-C", extractPath, @"-f", @"-"];
   }
@@ -41,7 +48,7 @@ NSString *const BSDTarPath = @"/usr/bin/bsdtar";
 {
   return [[[[[[[[FBProcessBuilder
     withLaunchPath:BSDTarPath]
-    withArguments:[self commandToExtractFromStdInWithExtractPath:extractPath overrideModificationTime:overrideMTime compression:compression]]
+    withArguments:[self commandToExtractFromStdInWithExtractPath:extractPath overrideModificationTime:overrideMTime compression:compression debugLogging:NO]]
     withStdIn:stream]
     withStdErrToLoggerAndErrorMessage:logger.debug]
     withStdOutToLogger:logger.debug]
@@ -116,6 +123,18 @@ NSString *const BSDTarPath = @"/usr/bin/bsdtar";
 }
 
 #pragma mark Private
+
++ (NSString *)flagStringForExtractionWithOverrideModificationTime:(BOOL)overrideMTime debugLogging:(BOOL)debugLogging
+{
+  NSMutableArray<NSString *> *flags = [@[@"z", @"x", @"p"] mutableCopy];
+  if (overrideMTime) {
+    [flags addObject:@"m"];
+  }
+  if (debugLogging) {
+    [flags addObject:@"v"];
+  }
+  return [NSString stringWithFormat:@"-%@", [flags componentsJoinedByString:@""]];
+}
 
 + (FBProcessBuilder<NSNull *, NSData *, id> *)createGzippedTarTaskBuilderForPath:(NSString *)path logger:(id<FBControlCoreLogger>)logger error:(NSError **)error
 {

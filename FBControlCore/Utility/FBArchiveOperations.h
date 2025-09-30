@@ -30,6 +30,16 @@ typedef NS_ENUM(NSUInteger, FBCompressionFormat) {
 @interface FBArchiveOperations : NSObject
 
 /**
+ Builds a command to extract from a file on disk
+ 
+ @param path the path to the archive.
+ @param extractPath the extraction path.
+ @param overrideMTime if YES the archive contests' `mtime` will be ignored. Current timestamp will be used as mtime of extracted files/directories.
+ @return an array of strings for the command to invoke.
+ */
++ (NSArray<NSString *> *)commandToExtractArchiveAtPath:(NSString *)path toPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime debugLogging:(BOOL)debugLogging;
+
+/**
  Extracts a tar, or zip file archive to a directory.
  The file can be a:
  - An uncompressed tar.
@@ -45,13 +55,15 @@ typedef NS_ENUM(NSUInteger, FBCompressionFormat) {
 + (FBFuture<NSString *> *)extractArchiveAtPath:(NSString *)path toPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime logger:(id<FBControlCoreLogger>)logger;
 
 /**
- The command to extract via stdin
+ Builds a command to extract via stdin
 
  @param extractPath the extraction path
  @param overrideMTime if YES the archive contests' `mtime` will be ignored. Current timestamp will be used as mtime of extracted files/directories.
  @param compression compression format used by client
+ @param debugLogging whether to apply debug logging in the command.
+ @return an array of strings for the command to invoke.
  */
-+ (NSArray<NSString *> *)commandToExtractFromStdInWithExtractPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime compression:(FBCompressionFormat)compression;
++ (NSArray<NSString *> *)commandToExtractFromStdInWithExtractPath:(NSString *)extractPath overrideModificationTime:(BOOL)overrideMTime compression:(FBCompressionFormat)compression debugLogging:(BOOL)debugLogging;
 
 /**
  Extracts a tar, or zip stream archive to a directory.
