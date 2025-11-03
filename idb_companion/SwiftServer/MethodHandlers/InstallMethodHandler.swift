@@ -36,34 +36,43 @@ struct InstallMethodHandler {
       return payload
     }
 
-    var request = try await requestStream.requiredNext
+    var iterator = requestStream.makeAsyncIterator()
+
+    func requiredNext() async throws -> Idb_InstallRequest {
+      guard let next = try await iterator.next() else {
+        throw GRPCStatus(code: .failedPrecondition, message: "Expected next element in stream")
+      }
+      return next
+    }
+
+    var request = try await requiredNext()
 
     guard case let .destination(destination) = request.value else {
       throw GRPCStatus(code: .failedPrecondition, message: "Expected destination as first request in stream")
     }
-    request = try await requestStream.requiredNext
+    request = try await requiredNext()
 
     var name = UUID().uuidString
     if case let .nameHint(nameHint) = request.value {
       name = nameHint
-      request = try await requestStream.requiredNext
+      request = try await requiredNext()
     }
 
     var makeDebuggable = false
     if case let .makeDebuggable(debuggable) = request.value {
       makeDebuggable = debuggable
-      request = try await requestStream.requiredNext
+      request = try await requiredNext()
     }
     var overrideModificationTime = false
     if case let .overrideModificationTime(omtime) = request.value {
       overrideModificationTime = omtime
-      request = try await requestStream.requiredNext
+      request = try await requiredNext()
     }
 
     var skipSigningBundles = false
     if case let .skipSigningBundles(skip) = request.value {
       skipSigningBundles = skip
-      request = try await requestStream.requiredNext
+      request = try await requiredNext()
     }
 
     var linkToBundle: FBDsymInstallLinkToBundle?
@@ -71,12 +80,12 @@ struct InstallMethodHandler {
     // (2022-03-02) REMOVE! Keeping only for retrocompatibility
     if case let .bundleID(id) = request.value {
       linkToBundle = .init(id, bundle_type: .app)
-      request = try await requestStream.requiredNext
+      request = try await requiredNext()
     }
 
     if case let .linkDsymToBundle(link) = request.value {
       linkToBundle = readLinkBundleToDsym(from: link)
-      request = try await requestStream.requiredNext
+      request = try await requiredNext()
     }
 
     var payload = try extractPayloadFromRequest()
@@ -84,7 +93,7 @@ struct InstallMethodHandler {
     var compression = FBCompressionFormat.GZIP
     if case let .compression(format) = payload.source {
       compression = readCompressionFormat(from: format)
-      request = try await requestStream.requiredNext
+      request = try await requiredNext()
       payload = try extractPayloadFromRequest()
     }
 
