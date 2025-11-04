@@ -64,7 +64,8 @@
     environment:[self environmentFromConfiguration:testRunnerConfiguration environment:applicationLaunchConfiguration.environment]
     waitForDebugger:applicationLaunchConfiguration.waitForDebugger
     io:applicationLaunchConfiguration.io
-    launchMode:FBApplicationLaunchModeRelaunchIfRunning];
+    launchMode:FBApplicationLaunchModeRelaunchIfRunning
+    activateSuspended:applicationLaunchConfiguration.activateSuspended];
 }
 
 + (NSArray<NSString *> *)argumentsFromConfiguration:(FBTestRunnerConfiguration *)configuration attributes:(NSArray<NSString *> *)attributes

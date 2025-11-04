@@ -258,7 +258,8 @@ static const NSTimeInterval DefaultTestTimeout = (60 * 60);  // 1 hour.
     environment:targetEnvironment
     waitForDebugger:NO
     io:processIO
-    launchMode:FBApplicationLaunchModeFailIfRunning];
+    launchMode:FBApplicationLaunchModeFailIfRunning
+    activateSuspended:nil];
   id token = @(receipt.hash);
 
   [[self
