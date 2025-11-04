@@ -9,7 +9,7 @@
 
 @implementation FBApplicationLaunchConfiguration
 
-- (instancetype)initWithBundleID:(NSString *)bundleID bundleName:(nullable NSString *)bundleName arguments:(NSArray<NSString *> *)arguments environment:(NSDictionary<NSString *, NSString *> *)environment waitForDebugger:(BOOL)waitForDebugger io:(FBProcessIO *)io launchMode:(FBApplicationLaunchMode)launchMode
+- (instancetype)initWithBundleID:(NSString *)bundleID bundleName:(nullable NSString *)bundleName arguments:(NSArray<NSString *> *)arguments environment:(NSDictionary<NSString *, NSString *> *)environment waitForDebugger:(BOOL)waitForDebugger io:(FBProcessIO *)io launchMode:(FBApplicationLaunchMode)launchMode activateSuspended:(NSNumber *)activateSuspended
 {
   self = [super initWithArguments:arguments environment:environment io:io];
   if (!self) {
@@ -20,6 +20,7 @@
   _bundleName = bundleName;
   _waitForDebugger = waitForDebugger;
   _launchMode = launchMode;
+  _activateSuspended = activateSuspended;
 
   return self;
 }

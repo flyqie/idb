@@ -43,7 +43,8 @@ struct LaunchMethodHandler {
       environment: start.env,
       waitForDebugger: start.waitForDebugger,
       io: io,
-      launchMode: start.foregroundIfRunning ? .foregroundIfRunning : .failIfRunning)
+      launchMode: start.foregroundIfRunning ? .foregroundIfRunning : .failIfRunning,
+      activateSuspended: nil)
     let launchedApp = try await BridgeFuture.value(commandExecutor.launch_app(config))
     let response = Idb_LaunchResponse.with {
       $0.debugger.pid = UInt64(launchedApp.processIdentifier)

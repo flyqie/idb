@@ -209,6 +209,11 @@ The Initializer for UI Tests.
 @property (nonatomic, assign, readonly) BOOL collectResultBundle;
 
 /**
+ If present, sets the activate_suspended key on the options param passed to launchApplicationAsyncWithID
+ */
+@property (nullable, nonatomic, copy, readonly) NSNumber *activateSuspended;
+
+/**
  Starts the test operation.
 
  @param bundleStorage the bundle storage class to use.

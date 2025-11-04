@@ -361,6 +361,9 @@
   if (stdErrPath) {
     options[@"stderr"] = stdErrPath;
   }
+  if (configuration.activateSuspended != nil) {
+    options[@"activate_suspended"] = configuration.activateSuspended;
+  }
   return [options copy];
 }
 

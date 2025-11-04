@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
  @return a new Configuration Object with the arguments applied.
  */
 
-- (instancetype)initWithBundleID:(NSString *)bundleID bundleName:(nullable NSString *)bundleName arguments:(NSArray<NSString *> *)arguments environment:(NSDictionary<NSString *, NSString *> *)environment waitForDebugger:(BOOL)waitForDebugger io:(FBProcessIO *)io launchMode:(FBApplicationLaunchMode)launchMode;
+- (instancetype)initWithBundleID:(NSString *)bundleID bundleName:(nullable NSString *)bundleName arguments:(NSArray<NSString *> *)arguments environment:(NSDictionary<NSString *, NSString *> *)environment waitForDebugger:(BOOL)waitForDebugger io:(FBProcessIO *)io launchMode:(FBApplicationLaunchMode)launchMode activateSuspended:(nullable NSNumber *)activateSuspended;
 
 /**
  The Bundle ID (CFBundleIdentifier) of the the Application to Launch. Will not be nil.
@@ -57,6 +57,11 @@ NS_ASSUME_NONNULL_BEGIN
  An enum describing how to launch the application
  */
 @property (nonatomic, assign, readonly) FBApplicationLaunchMode launchMode;
+
+/**
+ If present, sets the activate_suspended key on the options param passed to launchApplicationAsyncWithID
+ */
+@property (nullable, nonatomic, copy, readonly) NSNumber *activateSuspended;
 
 /**
  A BOOL signalizing whether the application should wait for debugger to be attached immediately after launch.

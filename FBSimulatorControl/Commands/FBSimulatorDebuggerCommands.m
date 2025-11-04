@@ -100,7 +100,8 @@
     environment:@{}
     waitForDebugger:YES
     io:FBProcessIO.outputToDevNull
-    launchMode:FBApplicationLaunchModeFailIfRunning];
+    launchMode:FBApplicationLaunchModeFailIfRunning
+    activateSuspended:nil];
   return [[[self.simulator
     launchApplication:configuration]
     onQueue:self.simulator.workQueue fmap:^(id<FBLaunchedApplication> process) {

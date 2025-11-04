@@ -16,7 +16,7 @@
 #import "FBXCTestRunFileReader.h"
 #import "FBXCTestRunRequest.h"
 
-static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSString *bundleID, NSDictionary<NSString *, NSString *> *environment, NSArray<NSString *> * arguments, id<FBControlCoreLogger> logger,  NSString * processLogDirectory, bool waitForDebugger, dispatch_queue_t queue)
+static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSString *bundleID, NSDictionary<NSString *, NSString *> *environment, NSArray<NSString *> * arguments, id<FBControlCoreLogger> logger,  NSString * processLogDirectory, bool waitForDebugger, NSNumber *activateSuspended, dispatch_queue_t queue)
 {
   FBLoggingDataConsumer *stdOutConsumer = [FBLoggingDataConsumer consumerWithLogger:logger];
   FBLoggingDataConsumer *stdErrConsumer = [FBLoggingDataConsumer consumerWithLogger:logger];
@@ -44,7 +44,8 @@ static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSStri
         environment:environment ?: @{}
         waitForDebugger:waitForDebugger
         io:io
-        launchMode:FBApplicationLaunchModeRelaunchIfRunning];
+        launchMode:FBApplicationLaunchModeRelaunchIfRunning
+        activateSuspended:activateSuspended];
   }];
 }
 
@@ -172,7 +173,7 @@ static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSStri
 - (FBFuture<FBIDBAppHostedTestConfiguration *> *)testConfigWithRunRequest:(FBXCTestRunRequest *)request testApps:(FBTestApplicationsPair *)testApps logDirectoryPath:(NSString *)logDirectoryPath logger:(id<FBControlCoreLogger>)logger queue:(dispatch_queue_t)queue
 {
   FBFuture<FBApplicationLaunchConfiguration *> *appLaunchConfigFuture = nil;
-  appLaunchConfigFuture = BuildAppLaunchConfig(testApps.testHostApp.bundle.identifier, request.environment, request.arguments, logger, logDirectoryPath, request.waitForDebugger, queue);
+  appLaunchConfigFuture = BuildAppLaunchConfig(testApps.testHostApp.bundle.identifier, request.environment, request.arguments, logger, logDirectoryPath, request.waitForDebugger, request.activateSuspended, queue);
   FBCodeCoverageConfiguration *coverageConfig = nil;
   if (request.coverageRequest.collect) {
     NSString *coverageDirName =[NSString stringWithFormat:@"coverage_%@", NSUUID.UUID.UUIDString];
@@ -282,7 +283,8 @@ static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSStri
     environment:request.environment ?: @{}
     waitForDebugger:request.waitForDebugger
     io:[[FBProcessIO alloc] initWithStdIn:nil stdOut:nil stdErr:nil]
-    launchMode:FBApplicationLaunchModeFailIfRunning];
+    launchMode:FBApplicationLaunchModeFailIfRunning
+    activateSuspended:nil];
 
   FBTestLaunchConfiguration *testLaunchConfiguration = [[FBTestLaunchConfiguration alloc]
     initWithTestBundle:self.testBundle
