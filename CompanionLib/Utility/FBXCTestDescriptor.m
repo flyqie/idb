@@ -130,7 +130,11 @@ static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSStri
     //killing them is unnecessary for us.
     return FBFuture.empty;
   }
-
+  
+  if (request.killAllRunningApplications != nil && request.killAllRunningApplications.boolValue == NO)
+  {
+    return FBFuture.empty;
+  }
   // Kill all Running Applications to get back to a clean slate.
   return [[FBXCTestBootstrapDescriptor killAllRunningApplications:target] mapReplace:NSNull.null];
 }

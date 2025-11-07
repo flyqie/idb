@@ -69,7 +69,7 @@ The Initializer for App Tests.
  @param coverageRequest information about llvm code coverage collection
  @return an FBXCTestRunRequest instance.
 */
-+ (instancetype)applicationTestWithTestBundleID:(NSString *)testBundleID testHostAppBundleID:(NSString *)testHostAppBundleID environment:(NSDictionary<NSString *, NSString *> *)environment arguments:(NSArray<NSString *> *)arguments testsToRun:(nullable NSSet<NSString *> *)testsToRun testsToSkip:(NSSet<NSString *> *)testsToSkip testTimeout:(NSNumber *)testTimeout reportActivities:(BOOL)reportActivities reportAttachments:(BOOL)reportAttachments coverageRequest:(FBCodeCoverageRequest *)coverageRequest collectLogs:(BOOL)collectLogs waitForDebugger:(BOOL)waitForDebugger collectResultBundle:(BOOL)collectResultBundle;
++ (instancetype)applicationTestWithTestBundleID:(NSString *)testBundleID testHostAppBundleID:(NSString *)testHostAppBundleID environment:(NSDictionary<NSString *, NSString *> *)environment arguments:(NSArray<NSString *> *)arguments testsToRun:(nullable NSSet<NSString *> *)testsToRun testsToSkip:(NSSet<NSString *> *)testsToSkip testTimeout:(NSNumber *)testTimeout reportActivities:(BOOL)reportActivities reportAttachments:(BOOL)reportAttachments coverageRequest:(FBCodeCoverageRequest *)coverageRequest collectLogs:(BOOL)collectLogs waitForDebugger:(BOOL)waitForDebugger collectResultBundle:(BOOL)collectResultBundle activateSuspended:(nullable NSNumber*)activateSuspended killAllRunningApplications:(nullable NSNumber*)killAllRunningApplications;
 
 
 /**
@@ -212,6 +212,11 @@ The Initializer for UI Tests.
  If present, sets the activate_suspended key on the options param passed to launchApplicationAsyncWithID
  */
 @property (nullable, nonatomic, copy, readonly) NSNumber *activateSuspended;
+
+/**
+  If present, determines if all running applications should be killed before starting a test
+ */
+@property (nullable, nonatomic, copy, readonly) NSNumber *killAllRunningApplications;
 
 /**
  Starts the test operation.

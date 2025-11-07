@@ -76,7 +76,9 @@ struct XCTestRunMethodHandler {
         coverageRequest: extractCodeCoverage(from: request),
         collectLogs: request.collectLogs,
         waitForDebugger: request.waitForDebugger,
-        collectResultBundle: request.collectResultBundle)
+        collectResultBundle: request.collectResultBundle,
+        activateSuspended: request.hasActivateSuspended ? NSNumber(value: request.activateSuspended) : nil,
+        killAllRunningApplications: request.hasKillAllRunningApplications ? NSNumber(value: request.killAllRunningApplications) : nil)
     case let .ui(ui):
       return FBXCTestRunRequest.uiTest(
         withTestBundleID: request.testBundleID,
