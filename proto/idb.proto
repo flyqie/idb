@@ -752,7 +752,8 @@ message XctestRunRequest {
   bool wait_for_debugger = 12;
   CodeCoverage code_coverage = 13;
   bool collect_result_bundle = 14;
-  bool activate_suspended = 15;
+  optional bool activate_suspended = 15;
+  optional bool kill_all_running_applications = 16;
 }
 
 message XctestRunResponse {
