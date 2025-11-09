@@ -93,7 +93,8 @@ struct XCTestRunMethodHandler {
         collectLogs: request.collectLogs,
         collectResultBundle: request.collectResultBundle,
         activateSuspended: request.hasActivateSuspended ? NSNumber(value: request.activateSuspended) : nil,
-        killAllRunningApplications: request.hasKillAllRunningApplications ? NSNumber(value: request.killAllRunningApplications) : nil)
+        killAllRunningApplications: request.hasKillAllRunningApplications ? NSNumber(value: request.killAllRunningApplications) : nil,
+        disableXctestDebugLogging: request.hasDisableXctestDebugLogging ? NSNumber(value:request.disableXctestDebugLogging) : nil)
     case .none:
       return nil
     }

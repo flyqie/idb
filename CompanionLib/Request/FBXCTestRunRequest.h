@@ -102,7 +102,7 @@ The Initializer for UI Tests.
  @param coverageRequest information about llvm code coverage collection
  @return an FBXCTestRunRequest instance.
 */
-+ (instancetype)uiTestWithTestBundleID:(NSString *)testBundleID testHostAppBundleID:(NSString *)testHostAppBundleID testTargetAppBundleID:(NSString *)testTargetAppBundleID environment:(NSDictionary<NSString *, NSString *> *)environment arguments:(NSArray<NSString *> *)arguments testsToRun:(nullable NSSet<NSString *> *)testsToRun testsToSkip:(NSSet<NSString *> *)testsToSkip testTimeout:(NSNumber *)testTimeout reportActivities:(BOOL)reportActivities reportAttachments:(BOOL)reportAttachments coverageRequest:(FBCodeCoverageRequest *)coverageRequest collectLogs:(BOOL)collectLogs collectResultBundle:(BOOL)collectResultBundle activateSuspended:(nullable NSNumber*)activateSuspended killAllRunningApplications:(nullable NSNumber*)killAllRunningApplications;
++ (instancetype)uiTestWithTestBundleID:(NSString *)testBundleID testHostAppBundleID:(NSString *)testHostAppBundleID testTargetAppBundleID:(NSString *)testTargetAppBundleID environment:(NSDictionary<NSString *, NSString *> *)environment arguments:(NSArray<NSString *> *)arguments testsToRun:(nullable NSSet<NSString *> *)testsToRun testsToSkip:(NSSet<NSString *> *)testsToSkip testTimeout:(NSNumber *)testTimeout reportActivities:(BOOL)reportActivities reportAttachments:(BOOL)reportAttachments coverageRequest:(FBCodeCoverageRequest *)coverageRequest collectLogs:(BOOL)collectLogs collectResultBundle:(BOOL)collectResultBundle activateSuspended:(nullable NSNumber*)activateSuspended killAllRunningApplications:(nullable NSNumber*)killAllRunningApplications disableXctestDebugLogging:(nullable NSNumber *)disableXctestDebugLogging;
 
 
 /**
@@ -217,6 +217,11 @@ The Initializer for UI Tests.
   If present, determines if all running applications should be killed before starting a test
  */
 @property (nullable, nonatomic, copy, readonly) NSNumber *killAllRunningApplications;
+
+/**
+  If present, determines if invocations of  _XCT_logDebugMessage get ignored
+ */
+@property (nullable, nonatomic, copy, readonly) NSNumber *disableXctestDebugLogging;
 
 /**
  Starts the test operation.
