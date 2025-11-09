@@ -131,8 +131,7 @@ static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSStri
     return FBFuture.empty;
   }
   
-  if (request.killAllRunningApplications != nil && request.killAllRunningApplications.boolValue == NO)
-  {
+  if (request.killAllRunningApplications != nil && request.killAllRunningApplications.boolValue == NO) {
     return FBFuture.empty;
   }
   // Kill all Running Applications to get back to a clean slate.
@@ -202,7 +201,8 @@ static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSStri
       coverageDirectoryPath:coverageConfig.coverageDirectory
       enableContinuousCoverageCollection:coverageConfig.shouldEnableContinuousCoverageCollection
       logDirectoryPath:logDirectoryPath
-      reportResultBundle:request.collectResultBundle];
+      reportResultBundle:request.collectResultBundle
+    disableXctestDebugLogging:request.disableXctestDebugLogging];
     return [[FBIDBAppHostedTestConfiguration alloc] initWithTestLaunchConfiguration:testLaunchConfig coverageConfiguration:coverageConfig];
   }];
 }
@@ -306,7 +306,8 @@ static FBFuture<FBApplicationLaunchConfiguration *> *BuildAppLaunchConfig(NSStri
     coverageDirectoryPath:nil
     enableContinuousCoverageCollection:NO
     logDirectoryPath:logDirectoryPath
-    reportResultBundle:request.collectResultBundle];
+    reportResultBundle:request.collectResultBundle
+    disableXctestDebugLogging:request.disableXctestDebugLogging];
 
   return [FBFuture futureWithResult:[[FBIDBAppHostedTestConfiguration alloc] initWithTestLaunchConfiguration:testLaunchConfiguration coverageConfiguration:nil]];
 }

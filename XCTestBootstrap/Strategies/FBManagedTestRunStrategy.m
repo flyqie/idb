@@ -44,7 +44,8 @@
         timeout:configuration.timeout
         testHostLaunchConfiguration:testHostLaunchConfiguration
         testedApplicationAdditionalEnvironment:runnerConfiguration.testedApplicationAdditionalEnvironment
-        testConfiguration:runnerConfiguration.testConfiguration];
+        testConfiguration:runnerConfiguration.testConfiguration
+        disableXctestDebugLogging:configuration.disableXctestDebugLogging];
 
       // Construct and run the mediator, the core of the test execution.
       return [FBTestManagerAPIMediator
