@@ -1,0 +1,30 @@
+name: Deploy Packages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Build idb_companion
+        run: |
+          cd $GITHUB_WORKSPACE
+          brew install protobuf
+          ./idb_build.sh idb_companion build build_output
+
+      - name: Compress idb_companion
+        run: |
+          tar -czf idb-companion.universal.tar.gz -C build_output .
+
+      - name: Upload idb_companion Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: idb_companion
+          path: ./idb-companion.universal.tar.gz
